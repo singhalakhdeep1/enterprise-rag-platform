@@ -1,0 +1,17 @@
+groups:
+  - name: enterprise-rag-alerts
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{job="enterprise-rag",status=~"5.."}[5m]) > 0.05
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: High 5xx error rate on enterprise-rag
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="enterprise-rag"}[5m])) by (le)) > 1.2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: P95 latency breached on enterprise-rag

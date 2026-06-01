@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: enterprise-rag-api
+  namespace: staging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: enterprise-rag-api
+  template:
+    metadata:
+      labels:
+        app: enterprise-rag-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/alakhdeepsingh/enterprise-rag-api:staging
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10

@@ -1,8 +1,8 @@
 # Enterprise RAG Knowledge Platform
 
-Multi-tenant document intelligence platform with a FastAPI backend and a Next.js frontend. This implementation is a portfolio-grade local build that demonstrates ingestion, chunking, retrieval, grounded answer synthesis, evaluation, analytics, tenant exports, and admin reset flows without requiring managed cloud dependencies.
+A multi-tenant document intelligence platform with a FastAPI backend and Next.js frontend. This portfolio-grade local build demonstrates ingestion, chunking, retrieval, grounded answer synthesis, evaluation, analytics, tenant exports, and admin reset flows without requiring managed cloud dependencies.
 
-## Planned stack
+## Tech Stack
 
 - Frontend: Next.js 15, TypeScript, Tailwind CSS
 - Backend: FastAPI, Python 3.12
@@ -10,16 +10,16 @@ Multi-tenant document intelligence platform with a FastAPI backend and a Next.js
 - Storage: PostgreSQL + pgvector, S3/MinIO
 - Observability: OpenTelemetry, Prometheus, Grafana
 
-## Implemented capabilities
+## Implementation
 
 - FastAPI API with persistent JSON-backed document catalog, chunk store, search, answer, evaluation, and analytics endpoints
-- Seeded demo tenants so the product is interactive immediately after startup
+- Seeded demo tenants for immediate interaction after startup
 - Next.js control plane for ingestion, semantic search, grounded answer generation, indexed document browsing, and evaluation metrics
 - Tenant catalog, tenant export, and reset flows for local admin workflows
 - Deterministic backend tests covering upload, retrieval, answer generation, evaluation, export, and reset
 - Monorepo structure ready for pgvector, Celery, object storage, and observability upgrades
 
-## Local development
+## Local Development
 
 ### Backend
 
@@ -117,3 +117,9 @@ enterprise-rag-platform/
 1. Replace the in-memory registry with PostgreSQL + pgvector persistence.
 2. Add async ingestion with Celery and Redis.
 3. Integrate object storage, OCR, hybrid retrieval, and answer generation.
+
+---
+
+## 📝 License
+
+Proprietary - All rights reserved.

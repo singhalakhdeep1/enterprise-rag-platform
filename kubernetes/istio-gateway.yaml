@@ -1,0 +1,60 @@
+# Istio Gateway for enterprise-rag-platform
+
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: rag-gateway
+  namespace: rag-platform
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "rag.example.com"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: rag-vs
+  namespace: rag-platform
+spec:
+  hosts:
+  - "rag.example.com"
+  gateways:
+  - rag-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /api
+    route:
+    - destination:
+        host: rag-api-service
+        port:
+          number: 80
+  - match:
+    - uri:
+        prefix: /graphql
+    route:
+    - destination:
+        host: rag-api-service
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: rag-dr
+  namespace: rag-platform
+spec:
+  host: rag-api-service
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    circuitBreaker:
+      consecutiveErrors: 3
+      interval: 30s
+      baseEjectionTime: 30s

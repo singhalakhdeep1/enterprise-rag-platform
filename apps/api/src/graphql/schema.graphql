@@ -1,0 +1,31 @@
+# GraphQL schema for enterprise-rag-platform
+
+type Document {
+  id: ID!
+  content: String!
+  metadata: JSON
+  embedding: [Float]
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Query {
+  documents(limit: Int, offset: Int): [Document!]!
+  document(id: ID!): Document
+  searchDocuments(query: String!, limit: Int): [Document!]!
+  ragQuery(question: String!): String!
+}
+
+type Mutation {
+  addDocument(content: String!, metadata: JSON): Document!
+  updateDocument(id: ID!, content: String, metadata: JSON): Document!
+  deleteDocument(id: ID!): Boolean!
+  bulkAddDocuments(documents: [DocumentInput!]!): [Document!]!
+}
+
+input DocumentInput {
+  content: String!
+  metadata: JSON
+}
+
+scalar JSON

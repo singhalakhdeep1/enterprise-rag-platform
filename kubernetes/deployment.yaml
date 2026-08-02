@@ -1,0 +1,49 @@
+# Kubernetes deployment for enterprise-rag-platform
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-api
+  namespace: rag-platform
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: rag-api
+  template:
+    metadata:
+      labels:
+        app: rag-api
+    spec:
+      containers:
+      - name: rag-api
+        image: rag-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: REDIS_URL
+          value: "redis://redis-service:6379"
+        - name: ELASTICSEARCH_URL
+          value: "http://elasticsearch-service:9200"
+        - name: QDRANT_URL
+          value: "http://qdrant-service:6333"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-api-service
+  namespace: rag-platform
+spec:
+  selector:
+    app: rag-api
+  ports:
+  - port: 80
+    targetPort: 3000
+  type: LoadBalancer

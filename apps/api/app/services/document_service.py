@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, UTC
 from pathlib import Path
 from typing import Dict, List
@@ -130,24 +131,55 @@ class DocumentService:
                 retrieved_chunks=0,
             )
 
-        summary_lines = []
-        for citation in citations[:3]:
-            snippet = citation.quote.replace("\n", " ").strip()
-            summary_lines.append(f"{citation.title}: {snippet}")
-
-        answer_text = (
-            "Grounded synthesis based on indexed tenant knowledge: "
-            + " ".join(summary_lines)
-            + " Review the cited chunks before using this in a production response flow."
-        )
         avg_score = sum(result.score for result in search_results.results) / len(search_results.results)
         confidence = round(min(0.96, max(0.25, avg_score)), 2)
+        answer_text = self._llm_answer(payload.question, citations)
         return AnswerResponse(
             question=payload.question,
             answer=answer_text,
             confidence=confidence,
             citations=citations,
             retrieved_chunks=len(citations),
+        )
+
+    def _llm_answer(self, question: str, citations: List[AnswerCitation]) -> str:
+        api_key = os.getenv("OPENAI_API_KEY")
+        context = "\n\n".join(
+            f"[{i + 1}] {c.title}:\n{c.quote}" for i, c in enumerate(citations[:5])
+        )
+        if api_key:
+            try:
+                from openai import OpenAI  # noqa: PLC0415
+                client = OpenAI(api_key=api_key)
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a helpful knowledge-base assistant. "
+                                "Answer ONLY using the provided context. "
+                                "Cite each source as [N] when you use it. "
+                                "If the context does not contain the answer, say so."
+                            ),
+                        },
+                        {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"},
+                    ],
+                    max_tokens=500,
+                    temperature=0.1,
+                )
+                return response.choices[0].message.content or ""
+            except Exception as exc:  # noqa: BLE001
+                return (
+                    f"[LLM call failed: {exc}] "
+                    f"Grounded synthesis: {context[:400]}"
+                )
+        # Fallback: rule-based synthesis when no API key is configured
+        summary_lines = [f"{c.title}: {c.quote.replace(chr(10), ' ').strip()}" for c in citations[:3]]
+        return (
+            "Grounded synthesis based on indexed tenant knowledge: "
+            + " ".join(summary_lines)
+            + " (Set OPENAI_API_KEY for AI-generated answers.)"
         )
 
     def evaluate(self, payload: EvaluationRequest) -> EvaluationRecord:
